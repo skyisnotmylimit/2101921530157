@@ -9,7 +9,7 @@ const MAX_WINDOW_SIZE = 10;
 let prevWinState = [];
 let curWinState = []; 
 
-const getAuthToken = async ()=> {
+const getAuthToken = async () => {
     const url = 'http://20.244.56.144/test/auth';
     const requestBody = {
         companyName: process.env.COMPANY_NAME,
@@ -27,7 +27,7 @@ const getAuthToken = async ()=> {
             }
         });
         console.log('Auth Response:', response.data);
-        return response.data;
+        return response.data.access_token;
     } catch (error) {
         if (error.response) {
             console.error('Error response from API:', error.response.data);
@@ -36,14 +36,19 @@ const getAuthToken = async ()=> {
         }
         return null;
     }
-}
+};
+
 const fetchNumbers = async (url) => {
     try {
-        const ACCESS_TOKEN = await getAuthToken();
+        const accessToken = await getAuthToken();
+        if (!accessToken) {
+            console.error('Failed to retrieve access token.');
+            return [];
+        }
         const response = await axios.get(url, {
             timeout: 500,
             headers: {
-                Authorization: `Bearer ${ACCESS_TOKEN}`
+                Authorization: `Bearer ${accessToken}`
             }
         });
         const numbers = response.data.numbers;
@@ -96,6 +101,7 @@ app.get('/numbers/:numberid', async (req, res) => {
 
     const numbers = await fetchNumbers(url);
     console.log(numbers);
+
     prevWinState = [...curWinState];
     curWinState = [...new Set([...curWinState, ...numbers])]; 
     if (curWinState.length > MAX_WINDOW_SIZE) {
