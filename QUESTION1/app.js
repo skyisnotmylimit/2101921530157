@@ -18,9 +18,20 @@ const fetchNumbers = async (url) => {
                 Authorization: `Bearer ${ACCESS_TOKEN}`
             }
         });
-        return response.data;
+        const numbers = response.data.numbers;
+
+        if (Array.isArray(numbers)) {
+            return numbers;
+        } else {
+            console.error('Unexpected response format:', response.data);
+            return [];
+        }
     } catch (error) {
-        console.error('Error fetching numbers:', error.message);
+        if (error.response) {
+            console.error('Error response from API:', error.response.status, error.response.data);
+        } else {
+            console.error('Error fetching numbers:', error.message);
+        }
         return [];
     }
 };
@@ -31,9 +42,9 @@ const calculateAverage = (numbers) => {
     return (sum / numbers.length).toFixed(2);
 };
 
-app.get('/',(req, res)=>{
-    res.status(200).json({"message" : "API is Live..."});
-})
+app.get('/', (req, res) => {
+    res.status(200).json({ "message": "API is Live..." });
+});
 
 app.get('/numbers/:numberid', async (req, res) => {
     const { numberid } = req.params;
@@ -54,6 +65,7 @@ app.get('/numbers/:numberid', async (req, res) => {
         default:
             return res.status(400).json({ error: 'Invalid number ID' });
     }
+
     const numbers = await fetchNumbers(url);
     prevWinState = [...curWinState];
     curWinState = [...new Set([...curWinState, ...numbers])]; 
