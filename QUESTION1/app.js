@@ -4,14 +4,42 @@ const axios = require('axios');
 const app = express();
 
 const PORT = process.env.PORT || 8080;
-const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const MAX_WINDOW_SIZE = 10;
 
 let prevWinState = [];
 let curWinState = []; 
 
+const getAuthToken = async ()=> {
+    const url = 'http://20.244.56.144/test/auth';
+    const requestBody = {
+        companyName: process.env.COMPANY_NAME,
+        clientID: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        ownerName: process.env.OWNER_NAME,
+        ownerEmail: process.env.OWNER_EMAIL,
+        rollNo: process.env.ROLL_NO
+    };
+    
+    try {
+        const response = await axios.post(url, requestBody, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log('Auth Response:', response.data);
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            console.error('Error response from API:', error.response.data);
+        } else {
+            console.error('Error making request:', error.message);
+        }
+        return null;
+    }
+}
 const fetchNumbers = async (url) => {
     try {
+        const ACCESS_TOKEN = await getAuthToken();
         const response = await axios.get(url, {
             timeout: 500,
             headers: {
@@ -67,6 +95,7 @@ app.get('/numbers/:numberid', async (req, res) => {
     }
 
     const numbers = await fetchNumbers(url);
+    console.log(numbers);
     prevWinState = [...curWinState];
     curWinState = [...new Set([...curWinState, ...numbers])]; 
     if (curWinState.length > MAX_WINDOW_SIZE) {
