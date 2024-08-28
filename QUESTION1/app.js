@@ -40,16 +40,16 @@ app.get('/numbers/:numberid', async (req, res) => {
     let url;
     switch (numberid) {
         case 'p':
-            url = 'http://20.244.56.144/test/prime';
+            url = 'http://20.244.56.144/test/primes';
             break;
         case 'f':
-            url = 'http://20.244.56.144/test/fibonacci';
+            url = 'http://20.244.56.144/test/fibo';
             break;
         case 'e':
             url = 'http://20.244.56.144/test/even';
             break;
         case 'r':
-            url = 'http://20.244.56.144/test/random';
+            url = 'http://20.244.56.144/test/rand';
             break;
         default:
             return res.status(400).json({ error: 'Invalid number ID' });
